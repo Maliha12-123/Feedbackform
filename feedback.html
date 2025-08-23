@@ -1,0 +1,154 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Feedback</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #121212; color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: flex-start;
+      min-height: 100vh;
+    }
+    form {
+      background: #1e1e1e; padding: 20px 40px;
+      border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      max-width: 600px; width: 100%;
+    }
+    h1 { text-align: center; margin-bottom: 30px; font-weight: 700;
+      font-size: 2.4rem; color: #f0a500; letter-spacing: 1px; }
+    label { display: block; margin-top: 20px; font-weight: 600; font-size: 1.1rem; }
+    input[type="text"], input[type="number"], textarea {
+      margin-top: 8px; width: 100%; padding: 12px 15px;
+      font-size: 1rem; border-radius: 8px; border: 2px solid #333;
+      background: #2c2c2c; color: #eee;
+    }
+    input:focus, textarea:focus {
+      outline: none; border-color: #f0a500; box-shadow: 0 0 8px #f0a500aa;
+      background: #3a3a3a;
+    }
+    .stars { margin-top: 8px; }
+    .stars span {
+      font-size: 32px; color: #ffa500dd; cursor: pointer;
+      transition: color 0.3s ease, transform 0.15s ease;
+      margin-right: 6px; display: inline-block;
+    }
+    .stars span:hover { color: #ffd700; transform: scale(1.2); }
+    button[type="submit"] {
+      margin-top: 30px; background: #f0a500; border: none; color: #121212;
+      font-weight: 700; font-size: 1.3rem; padding: 15px; width: 100%;
+      border-radius: 12px; cursor: pointer;
+    }
+    button[type="submit"]:hover { background-color: #ffbf00; }
+    #response { margin-top: 20px; text-align: center; font-weight: 600;
+      font-size: 1.1rem; color: #4caf50; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <form id="feedbackForm" novalidate>
+    <h1>Customer Feedback</h1>
+
+    <!-- Staff Name -->
+    <label for="name">Staff Name:
+      <input type="text" id="name" name="name" autocomplete="off" required />
+    </label>
+
+    <!-- Staff ID -->
+    <label for="staffId">Staff ID:
+      <input type="number" id="staffId" name="staffId" autocomplete="off" required />
+    </label>
+
+    <!-- Ratings (stars) -->
+    <div id="ratings"></div>
+
+    <label for="comments">Extra Comments:
+      <textarea id="comments" name="comments" rows="4"></textarea>
+    </label>
+
+    <button type="submit">Submit</button>
+    <div id="response"></div>
+  </form>
+
+  <script>
+    const categories = ["Hygiene", "Expertise", "Ambiance", "Professionalism", "Service", "Behavior", "Communication"];
+    const ratings = {};
+    const ratingsDiv = document.getElementById("ratings");
+
+    // Build star rating inputs dynamically
+    categories.forEach(cat => {
+      const label = document.createElement("label");
+      label.textContent = cat + ":";
+      const starContainer = document.createElement("div");
+      starContainer.classList.add("stars");
+
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement("span");
+        star.innerHTML = "☆";
+        star.dataset.value = i;
+
+        star.addEventListener("click", () => {
+          ratings[cat.toLowerCase()] = i;
+          [...starContainer.children].forEach((s, idx) => {
+            s.innerHTML = idx < i ? "★" : "☆";
+          });
+        });
+
+        starContainer.appendChild(star);
+      }
+      ratingsDiv.appendChild(label);
+      ratingsDiv.appendChild(starContainer);
+    });
+
+    // Force Staff Name to uppercase
+    document.getElementById("name").addEventListener("input", function () {
+      this.value = this.value.toUpperCase();
+    });
+
+    // Handle form submit
+    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const staffId = document.getElementById("staffId").value.trim();
+      const comments = document.getElementById("comments").value.trim();
+
+      if (!name || !staffId) {
+        alert("Staff Name and Staff ID are required!");
+        return;
+      }
+
+      if (!/^[0-9]+$/.test(staffId)) {
+        alert("Staff ID must contain only numbers!");
+        return;
+      }
+
+      // Prepare payload
+      const payload = {
+        staffName: name,
+        staffId: staffId,
+        comments: comments,
+        ...ratings
+      };
+
+      try {
+        const res = await fetch("http://localhost:8080/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("Server error");
+
+        const data = await res.json();
+        document.getElementById("response").textContent = "✅ Feedback submitted!";
+        console.log("Saved:", data);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("response").textContent = "❌ Error submitting feedback.";
+      }
+    });
+  </script>
+</body>
+</html>
