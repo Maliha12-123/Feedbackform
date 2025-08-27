@@ -47,30 +47,11 @@
   </style>
 </head>
 <body>
-  <form id="feedbackForm" novalidate>
-    <h1>Customer Feedback</h1>
-
-    <!-- Staff Name -->
-    <label for="name">Staff Name:
-      <input type="text" id="name" name="name" autocomplete="off" required />
-    </label>
-
-    <!-- Staff ID -->
-    <label for="staffId">Staff ID:
-      <input type="number" id="staffId" name="staffId" autocomplete="off" required />
-    </label>
-
-    <!-- Ratings (stars) -->
-    <div id="ratings"></div>
-
-    <label for="comments">Extra Comments:
-      <textarea id="comments" name="comments" rows="4"></textarea>
-    </label>
-
-    <button type="submit">Submit</button>
-    <div id="response"></div>
-  </form>
-
+ <form action="https://formspree.io/f/mabcd123" method="POST">
+  <input type="text" name="name" placeholder="Your Name" required>
+  <textarea name="comments" placeholder="Your feedback"></textarea>
+  <button type="submit">Send</button>
+</form>
   <script>
     const categories = ["Hygiene", "Expertise", "Ambiance", "Professionalism", "Service", "Behavior", "Communication"];
     const ratings = {};
@@ -152,3 +133,4 @@
   </script>
 </body>
 </html>
+
